@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { users, jobs, successStories, guidanceTopics } from './mockData.js';
 import bookingsRouter from './routes/bookings.js';
+import applicationsRouter from './routes/applications.js';
 
 const app = express();
 const PORT = 5001;
@@ -78,8 +79,9 @@ app.get('/api/guidance/:id', (req, res) => {
   res.json(topic);
 });
 
-// Bookings routes
+// Route handlers
 app.use('/api/bookings', bookingsRouter);
+app.use('/api/applications', applicationsRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

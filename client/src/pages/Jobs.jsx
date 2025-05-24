@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Container, Typography, Box, Card, CardContent, CardMedia, Chip, Button } from '@mui/material';
+import { Container, Typography, Box, Card, CardContent, CardMedia, Chip, Button, Snackbar, Alert } from '@mui/material';
 import api from '../config/api';
 import { cardStyles } from '../styles/cardStyles';
+import ApplicationModal from '../components/ApplicationModal';
 
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
   const [users, setUsers] = useState({});
   const [error, setError] = useState(null);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,6 +34,30 @@ const Jobs = () => {
 
     fetchData();
   }, []);
+
+  const handleApplyClick = (job) => {
+    setSelectedJob(job);
+    setIsApplicationModalOpen(true);
+  };
+
+  const handleApplicationSubmit = async (applicationData) => {
+    try {
+      const response = await api.post('/api/applications', applicationData);
+      setApplicationStatus({
+        open: true,
+        message: response.data.message,
+        severity: 'success'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      throw new Error(error.response?.data?.error || 'Failed to submit application');
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setApplicationStatus({ ...applicationStatus, open: false });
+  };
 
   if (error) {
     return (
@@ -103,6 +131,7 @@ const Jobs = () => {
                     variant="contained" 
                     color="primary" 
                     fullWidth
+                    onClick={() => handleApplyClick(job)}
                   >
                     Apply Now
                   </Button>
@@ -112,6 +141,30 @@ const Jobs = () => {
           </Box>
         ))}
       </Box>
+
+      {selectedJob && (
+        <ApplicationModal
+          open={isApplicationModalOpen}
+          onClose={() => setIsApplicationModalOpen(false)}
+          job={selectedJob}
+          onSubmit={handleApplicationSubmit}
+        />
+      )}
+
+      <Snackbar
+        open={applicationStatus.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={applicationStatus.severity}
+          sx={{ width: '100%' }}
+        >
+          {applicationStatus.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
