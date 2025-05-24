@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Container, Typography, Box, Card, CardContent, CardMedia, Button, Chip, Avatar } from '@mui/material';
+import { Container, Typography, Box, Card, CardContent, CardMedia, Button, Chip, Avatar, Snackbar, Alert } from '@mui/material';
 import api from '../config/api';
 import { cardStyles } from '../styles/cardStyles';
+import BookingModal from '../components/BookingModal';
 
 const Guidance = () => {
   const [topics, setTopics] = useState([]);
   const [users, setUsers] = useState({});
   const [error, setError] = useState(null);
+  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingStatus, setBookingStatus] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,6 +35,34 @@ const Guidance = () => {
 
     fetchData();
   }, []);
+
+  const handleBookSession = (topic) => {
+    setSelectedTopic(topic);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleBookingSubmit = async (bookingData) => {
+    try {
+      await api.post('/api/bookings', bookingData);
+      setIsBookingModalOpen(false);
+      setBookingStatus({
+        open: true,
+        message: 'Session booked successfully! Check your email for confirmation.',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error booking session:', error);
+      setBookingStatus({
+        open: true,
+        message: 'Failed to book session. Please try again.',
+        severity: 'error'
+      });
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setBookingStatus({ ...bookingStatus, open: false });
+  };
 
   if (error) {
     return (
@@ -123,7 +155,12 @@ const Guidance = () => {
                   <Typography variant="body2" color="textSecondary" gutterBottom>
                     Duration: {topic.duration}
                   </Typography>
-                  <Button variant="contained" color="primary" fullWidth>
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    fullWidth
+                    onClick={() => handleBookSession(topic)}
+                  >
                     Book Session
                   </Button>
                 </Box>
@@ -132,6 +169,31 @@ const Guidance = () => {
           </Box>
         ))}
       </Box>
+
+      {selectedTopic && (
+        <BookingModal
+          open={isBookingModalOpen}
+          onClose={() => setIsBookingModalOpen(false)}
+          topic={selectedTopic}
+          mentor={users[selectedTopic.mentor]}
+          onSubmit={handleBookingSubmit}
+        />
+      )}
+
+      <Snackbar
+        open={bookingStatus.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={bookingStatus.severity}
+          sx={{ width: '100%' }}
+        >
+          {bookingStatus.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

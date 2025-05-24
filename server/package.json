@@ -1,9 +1,9 @@
 {
-  "name": "server",
+  "name": "alumni-connect-portal-server",
   "version": "1.0.0",
-  "description": "Backend for Alumni Connect Portal",
-  "main": "index.js",
+  "description": "Backend server for Alumni Connect Portal",
   "type": "module",
+  "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
@@ -13,8 +13,9 @@
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.18.3",
-    "nodemon": "^3.1.0"
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   }
 }

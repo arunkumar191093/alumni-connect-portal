@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { users, jobs, successStories, guidanceTopics } from './mockData.js';
+import bookingsRouter from './routes/bookings.js';
 
 const app = express();
 const PORT = 5001;
@@ -9,6 +10,7 @@ const PORT = 5001;
 app.use(cors());
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -39,7 +41,7 @@ app.get('/api/users', (req, res) => {
 
 app.get('/api/users/:id', (req, res) => {
   const user = users.find(u => u.id === parseInt(req.params.id));
-  if (!user) return res.status(404).json({ message: 'User not found' });
+  if (!user) return res.status(404).json({ error: 'User not found' });
   res.json(user);
 });
 
@@ -50,7 +52,7 @@ app.get('/api/jobs', (req, res) => {
 
 app.get('/api/jobs/:id', (req, res) => {
   const job = jobs.find(j => j.id === parseInt(req.params.id));
-  if (!job) return res.status(404).json({ message: 'Job not found' });
+  if (!job) return res.status(404).json({ error: 'Job not found' });
   res.json(job);
 });
 
@@ -61,7 +63,7 @@ app.get('/api/stories', (req, res) => {
 
 app.get('/api/stories/:id', (req, res) => {
   const story = successStories.find(s => s.id === parseInt(req.params.id));
-  if (!story) return res.status(404).json({ message: 'Story not found' });
+  if (!story) return res.status(404).json({ error: 'Story not found' });
   res.json(story);
 });
 
@@ -72,14 +74,17 @@ app.get('/api/guidance', (req, res) => {
 
 app.get('/api/guidance/:id', (req, res) => {
   const topic = guidanceTopics.find(t => t.id === parseInt(req.params.id));
-  if (!topic) return res.status(404).json({ message: 'Topic not found' });
+  if (!topic) return res.status(404).json({ error: 'Guidance topic not found' });
   res.json(topic);
 });
+
+// Bookings routes
+app.use('/api/bookings', bookingsRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  res.status(500).json({ error: 'Something went wrong!' });
 });
 
 // Handle 404
